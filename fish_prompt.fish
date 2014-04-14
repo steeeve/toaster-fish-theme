@@ -40,29 +40,33 @@ function git_status
 end
 
 function _git_status_codes
-  set -l git_status (git status --porcelain ^/dev/null | tr '\n' '@')
-  if echo $git_status | grep -q -E '@M'
-    set_color $color_blue
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -E '@A'
-    set_color $color_green
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -E '@D'
+  set -l git_status (git status --porcelain ^/dev/null | sed -E 's/(^.{3}).*/\1/' | tr -d ' \n')
+  if echo $git_status | grep -q -e 'D'
     set_color $color_pink
     echo -n "彡ミ"
   end
-  if echo $git_status | grep -q -E '@R'
+  if echo $git_status | grep -q -e 'R'
     set_color $color_orange
     echo -n "彡ミ"
   end
-  if echo $git_status | grep -q -E '@C'
+  if echo $git_status | grep -q -e 'C'
     set_color $color_yellow
     echo -n "彡ミ"
   end
-  if echo $git_status | grep -q -E '^M '
+  if echo $git_status | grep -q -e 'A'
+    set_color $color_green
+    echo -n "彡ミ"
+  end
+  if echo $git_status | grep -q -e 'U'
+    set_color $color_blue
+    echo -n "彡ミ"
+  end
+  if echo $git_status | grep -q -e 'M'
     set_color $color_lilac
+    echo -n "彡ミ"
+  end
+  if echo $git_status | grep -q -e '?'
+    set_color $color_grey
     echo -n "彡ミ"
   end
 end
