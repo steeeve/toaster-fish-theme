@@ -1,83 +1,68 @@
-set color_orange fd971f
-set color_blue 6ec9dd
-set color_green a6e22e
-set color_pink f92672
-set color_grey 554f48
-set color_white f1f1f1
-set color_purple 9458ff
-set color_lilac ae81ff
+set color_orange FD971F
+set color_blue 6EC9DD
+set color_green A6E22E
+set color_yellow E6DB7E
+set color_pink F92672
+set color_grey 554F48
+set color_white F1F1F1
+set color_purple 9458FF
+set color_lilac AE81FF
 
-function git_branch
-  echo (git rev-parse --abbrev-ref HEAD ^/dev/null)
+function ce
+  set_color $argv[1]
+  echo -n $argv[2]
 end
 
 function current_folder
   echo -n $PWD | grep -o -E '[^\/]+$'
 end
 
+function _git_status
+  echo (git status --porcelain ^/dev/null | sed -E 's/(^.{3}).*/\1/' | tr -d ' \n')
+end
+
+function git_branch_name
+  echo (git rev-parse --abbrev-ref HEAD ^/dev/null)
+end
+
+function git_status_icons
+  set -l git_status (_git_status)
+
+  function rainbow
+    if echo $argv[1] | grep -q -e $argv[3]
+      ce $argv[2] "彡ミ"
+    end
+  end
+
+  rainbow $git_status $color_pink 'D'
+  rainbow $git_status $color_orange 'R'
+  rainbow $git_status $color_white 'C'
+  rainbow $git_status $color_green 'A'
+  rainbow $git_status $color_blue 'U'
+  rainbow $git_status $color_lilac 'M'
+  rainbow $git_status $color_grey '?'
+end
+
 function git_status
   # In git
-  if test -n (git_branch)
+  if test -n (git_branch_name)
 
-    set_color $color_blue
-    echo -n " git"
-    set_color $color_white
-    echo -n ":"
-    echo -n (git_branch)
+    ce $color_blue " git"
+    ce $color_white ":"(git_branch_name)
 
-    set -l is_dirty (git status --porcelain -z ^/dev/null)
-    if test -n (echo $is_dirty)
-      set_color $color_pink
-      echo -n " ●"
-      set_color $color_white
-      echo -n " [^._.^]ﾉ"
-      echo (_git_status_codes)
+    if test -n (_git_status)
+      ce $color_pink ' ●'
+      ce $color_white ' [^._.^]ﾉ'
+      echo (git_status_icons)
     else
-      set_color $color_green
-      echo -n ' ○' # clean
+      ce $color_green ' ○'
     end
   end
 end
 
-function _git_status_codes
-  set -l git_status (git status --porcelain ^/dev/null | sed -E 's/(^.{3}).*/\1/' | tr -d ' \n')
-  if echo $git_status | grep -q -e 'D'
-    set_color $color_pink
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -e 'R'
-    set_color $color_orange
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -e 'C'
-    set_color $color_yellow
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -e 'A'
-    set_color $color_green
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -e 'U'
-    set_color $color_blue
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -e 'M'
-    set_color $color_lilac
-    echo -n "彡ミ"
-  end
-  if echo $git_status | grep -q -e '?'
-    set_color $color_grey
-    echo -n "彡ミ"
-  end
-end
-
 function fish_prompt
-  set_color $color_blue
-  echo -n "# "
-  set_color $color_purple
-  echo -n (current_folder)
-  echo -n (git_status)
-  echo ""
-  set_color $color_pink
-  echo "\$ "
+  ce $color_blue "# "
+  ce $color_purple (current_folder)
+  echo (git_status)
+  ce $color_pink "\$ "
 end
