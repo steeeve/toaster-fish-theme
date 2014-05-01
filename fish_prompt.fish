@@ -1,68 +1,69 @@
-set color_orange FD971F
-set color_blue 6EC9DD
-set color_green A6E22E
-set color_yellow E6DB7E
-set color_pink F92672
-set color_grey 554F48
-set color_white F1F1F1
-set color_purple 9458FF
-set color_lilac AE81FF
+set __toaster_color_orange FD971F
+set __toaster_color_blue 6EC9DD
+set __toaster_color_green A6E22E
+set __toaster_color_yellow E6DB7E
+set __toaster_color_pink F92672
+set __toaster_color_grey 554F48
+set __toaster_color_white F1F1F1
+set __toaster_color_purple 9458FF
+set __toaster_color_lilac AE81FF
 
-function ce
+function __toaster_color_echo
   set_color $argv[1]
   echo -n $argv[2]
 end
 
-function current_folder
+function __toaster_current_folder
   echo -n $PWD | grep -o -E '[^\/]+$'
 end
 
-function _git_status
+function __toaster_git_status_codes
   echo (git status --porcelain ^/dev/null | sed -E 's/(^.{3}).*/\1/' | tr -d ' \n')
 end
 
-function git_branch_name
+function __toaster_git_branch_name
   echo (git rev-parse --abbrev-ref HEAD ^/dev/null)
 end
 
-function git_status_icons
-  set -l git_status (_git_status)
-
-  function rainbow
-    if echo $argv[1] | grep -q -e $argv[3]
-      ce $argv[2] "彡ミ"
-    end
+function __toaster_rainbow
+  if echo $argv[1] | grep -q -e $argv[3]
+    __toaster_color_echo $argv[2] "彡ミ"
   end
-
-  rainbow $git_status $color_pink 'D'
-  rainbow $git_status $color_orange 'R'
-  rainbow $git_status $color_white 'C'
-  rainbow $git_status $color_green 'A'
-  rainbow $git_status $color_blue 'U'
-  rainbow $git_status $color_lilac 'M'
-  rainbow $git_status $color_grey '?'
 end
 
-function git_status
+function __toaster_git_status_icons
+  set -l git_status (__toaster_git_status_codes)
+
+  __toaster_rainbow $git_status $__toaster_color_pink 'D'
+  __toaster_rainbow $git_status $__toaster_color_orange 'R'
+  __toaster_rainbow $git_status $__toaster_color_white 'C'
+  __toaster_rainbow $git_status $__toaster_color_green 'A'
+  __toaster_rainbow $git_status $__toaster_color_blue 'U'
+  __toaster_rainbow $git_status $__toaster_color_lilac 'M'
+  __toaster_rainbow $git_status $__toaster_color_grey '?'
+end
+
+function __toaster_git_status
   # In git
-  if test -n (git_branch_name)
+  if test -n (__toaster_git_branch_name)
 
-    ce $color_blue " git"
-    ce $color_white ":"(git_branch_name)
+    __toaster_color_echo $__toaster_color_blue " git"
+    __toaster_color_echo $__toaster_color_white ":"(__toaster_git_branch_name)
 
-    if test -n (_git_status)
-      ce $color_pink ' ●'
-      ce $color_white ' [^._.^]ﾉ'
-      echo (git_status_icons)
+    if test -n (__toaster_git_status_codes)
+      __toaster_color_echo $__toaster_color_pink ' ●'
+      __toaster_color_echo $__toaster_color_white ' [^._.^]ﾉ'
+      __toaster_git_status_icons
     else
-      ce $color_green ' ○'
+      __toaster_color_echo $__toaster_color_green ' ○'
     end
   end
 end
 
 function fish_prompt
-  ce $color_blue "# "
-  ce $color_purple (current_folder)
-  echo (git_status)
-  ce $color_pink "\$ "
+  __toaster_color_echo $__toaster_color_blue "# "
+  __toaster_color_echo $__toaster_color_purple (__toaster_current_folder)
+  __toaster_git_status
+  echo
+  __toaster_color_echo $__toaster_color_pink "\$ "
 end
